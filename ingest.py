@@ -1,7 +1,13 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader, PDFMinerLoader
-from langchain.embeddings import SentenceTransformerEmbeddings
-from langchain.vectorstores import Chroma 
+# from langchain.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain_community.document_loaders import PDFMinerLoader, PyPDFLoader, DirectoryLoader
+
+# from langchain.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+
+# from langchain.vectorstores import Chroma 
+from langchain_community.vectorstores import Chroma
+
 import os 
 from constants import CHROMA_SETTINGS
 
@@ -20,7 +26,7 @@ def main():
     texts = text_splitter.split_documents(documents)
     #create embeddings here
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-    db = Chroma.from_documents(texts, embeddings, persist_directory=persist_directory, client_settings=CHROMA_SETTINGS)
+    db = Chroma.from_documents(texts, embeddings, persist_directory=persist_directory)
     db.persist()
     db=None
 
