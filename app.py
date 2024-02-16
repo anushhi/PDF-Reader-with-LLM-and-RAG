@@ -4,9 +4,15 @@ from transformers import pipeline
 import torch
 import base64
 import textwrap
-from langchain.embeddings import SentenceTransformerEmbeddings
-from langchain.vectorstores import Chroma 
-from langchain.llms import HuggingFacePipeline
+# from langchain.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+
+# from langchain.vectorstores import Chroma 
+from langchain_community.vectorstores import Chroma
+
+# from langchain.llms import HuggingFacePipeline
+from langchain_community.llms import HuggingFacePipeline
+
 from langchain.chains import RetrievalQA
 from constants import CHROMA_SETTINGS
 
@@ -15,7 +21,7 @@ checkpoint = "LaMini-T5-738M"
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, device_map='auto', torch_dtype=torch.float32, offload_folder="offload_folder")
 
-@st.cache_resource
+# @st.cache_resource
 def llm_pipeline():
     pipe = pipeline(
         'text2text-generation',
@@ -29,11 +35,11 @@ def llm_pipeline():
     local_llm = HuggingFacePipeline(pipeline=pipe)
     return local_llm
 
-@st.cache_resource
+# @st.cache_resource
 def qa_llm():
     llm = llm_pipeline()
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-    db = Chroma(persist_directory="db", embedding_function=embeddings, client_settings=CHROMA_SETTINGS)
+    db = Chroma(persist_directory="db", embedding_function=embeddings)
     retriever = db.as_retriever()
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True)
     return qa
@@ -54,21 +60,26 @@ def process_answer(instruction):
     return answer,generated_text
 
 def main():
-    st.title("Search Your PDF 🐦📄")
-    with st.expander("About the App"):
-        st.markdown(
-            """
-            This is a Generative AI powered Question and Answering app that responds to questions about your PDF File.
-            """
-        )
-    question = st.text_area("Enter your Question")
-    if st.button("Ask"):
-        st.info("Your Question: " + question)
+    # st.title("Search Your PDF 🐦📄")
+    # with st.expander("About the App"):
+    #     st.markdown(
+    #         """
+    #         This is a Generative AI powered Question and Answering app that responds to questions about your PDF File.
+    #         """
+    #     )
+    # question = st.text_area("Enter your Question")
+    # if st.button("Ask"):
+    #     st.info("Your Question: " + question)
 
-        st.info("Your Answer")
-        answer, metadata = process_answer(question)
-        st.write(answer)
-        st.write(metadata)
+    #     st.info("Your Answer")
+    #     answer, metadata = process_answer(question)
+    #     st.write(answer)
+    #     st.write(metadata)
+    instruction = "Greenhouse gas concentrations are at their highest levels in how many years"  # replace this with your query
+  
+    answer, generation = process_answer(instruction)
+    print("Answer:", answer)
+    print("Generation:", generation)
 
 
 if __name__ == '__main__':
